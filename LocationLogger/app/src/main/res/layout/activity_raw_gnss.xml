@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".RawGNSSActivity">
+
+    <TextView
+        android:id="@+id/textViewAccumDeltaRange"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:minEms="5"
+        android:text="@string/UnknowValue"
+        app:layout_constraintStart_toEndOf="@+id/textViewAccumDeltaRangeName"
+        app:layout_constraintTop_toBottomOf="@+id/textViewCarrierFreq" />
+
+    <TextView
+        android:id="@+id/textViewConstellation"
+        android:layout_width="wrap_content"
+        android:layout_height="18dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:minEms="5"
+        android:text="@string/UnknowValue"
+        app:layout_constraintStart_toEndOf="@+id/textViewConstellationName"
+        app:layout_constraintTop_toBottomOf="@+id/textViewGNSSStatus" />
+
+    <TextView
+        android:id="@+id/textViewAccumDeltaRangeUnc"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:minEms="5"
+        android:text="@string/UnknowValue"
+        app:layout_constraintStart_toEndOf="@+id/textViewAccumDeltaRangeUncName"
+        app:layout_constraintTop_toBottomOf="@+id/textViewAccumDeltaRange" />
+
+    <TextView
+        android:id="@+id/textViewCarrierFreq"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:minEms="5"
+        android:text="@string/UnknowValue"
+        app:layout_constraintStart_toEndOf="@+id/textViewCarrierFreqName"
+        app:layout_constraintTop_toBottomOf="@+id/textViewSatCount" />
+
+    <include
+        layout="@layout/toolbar_main"
+        android:id="@+id/toolbar" />
+
+    <TextView
+        android:id="@+id/textViewStatusName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="20dp"
+        android:text="@string/GNSSStatusName"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar" />
+
+    <TextView
+        android:id="@+id/textViewGNSSStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="20dp"
+        android:minEms="5"
+        android:text="@string/UnknowValue"
+        app:layout_constraintStart_toEndOf="@+id/textViewStatusName"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar" />
+
+    <TextView
+        android:id="@+id/textViewConstellationName"
+        android:layout_width="wrap_content"
+        android:layout_height="18dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:text="@string/ConstellationName"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textViewStatusName" />
+
+    <TextView
+        android:id="@+id/textViewCarrierFreqName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:text="@string/CarrierFreqName"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textViewSatCountName" />
+
+    <TextView
+        android:id="@+id/textViewAccumDeltaRangeName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:text="@string/AccumDeltaRangeName"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textViewCarrierFreqName" />
+
+    <TextView
+        android:id="@+id/textViewAccumDeltaRangeUncName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:text="@string/AccumDeltaRangeUncName"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textViewAccumDeltaRangeName" />
+
+    <TextView
+        android:id="@+id/textViewTimeName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="8dp"
+        android:text="@string/textViewTime"
+        app:layout_constraintEnd_toStartOf="@+id/textViewTime"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar" />
+
+    <TextView
+        android:id="@+id/textViewTime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="8dp"
+        android:minEms="5"
+        android:text="@string/UnknowValue"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/toolbar" />
+
+    <TextView
+        android:id="@+id/textViewSatCount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:minEms="5"
+        android:text="@string/UnknowValue"
+        app:layout_constraintStart_toEndOf="@+id/textViewSatCountName"
+        app:layout_constraintTop_toBottomOf="@+id/textViewConstellation" />
+
+    <TextView
+        android:id="@+id/textViewSatCountName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:text="@string/SatelliteCountName"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textViewConstellationName" />
+
+</android.support.constraint.ConstraintLayout>

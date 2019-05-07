@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">Location Logger</string>
+    <string name="fuseLocationTitle">Fused Location</string>
+    <string name="rawGNSSLocationTitle">Raw GNSS Location</string>
+    <string name="computedGNSSLocationTitle">Computed GNSS Location</string>
+    <string name="textViewLatitude">Latitude:</string>
+    <string name="textView">Longitude:</string>
+    <string name="textViewTime">Time:</string>
+    <string name="textViewProvider">Provider:</string>
+    <string name="textViewAccuracy">Accuracy:</string>
+    <string name="textViewAltitude">Altitude:</string>
+    <string name="GNSSStatusName">Status:</string>
+    <string name="ConstellationName">Constellation:</string>
+    <string name="CarrierFreqName">Carrier Frequency (Hz):</string>
+    <string name="AccumDeltaRangeName">Accumulated Delta Range (m):</string>
+    <string name="AccumDeltaRangeUncName">Accumulated Delta Range Uncertainty (m):</string>
+    <string name="UnknowValue">-</string>
+    <string name="SatelliteCountName">Number of Satellites:</string>
+</resources>
