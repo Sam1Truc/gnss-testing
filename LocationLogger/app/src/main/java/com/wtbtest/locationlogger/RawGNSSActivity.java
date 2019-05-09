@@ -1,12 +1,14 @@
 package com.wtbtest.locationlogger;
 
 import android.content.Context;
+import android.location.GnssClock;
 import android.location.GnssMeasurement;
 import android.location.GnssMeasurementsEvent;
 import android.location.GnssStatus;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
@@ -34,10 +36,11 @@ public class RawGNSSActivity extends AppCompatActivity implements LocationListen
     private static final String TAG_TIME = "GNSSTime";
     private static final String TAG_CONSTCOUNT = "GNSSSatCount";
 
+    private static final int RANGE_ELEVATION = 35;
+    private static final int ZENITH_ELEVATION = 90;
+
 
     private LocationManager mLocationManager;
-    private FusedLocationProviderClient mFusedLocationClient;
-    private LocationCallback locationCallback;
     private GnssMeasurementsEvent.Callback mRawMeasurementsListener;
     private GnssStatus.Callback mGnssStatusListener;
 
@@ -48,6 +51,9 @@ public class RawGNSSActivity extends AppCompatActivity implements LocationListen
     private TextView textViewAccumDeltaRangeUnc;
     private TextView textViewTime;
     private TextView textViewSatCount;
+
+    private double GNSSTime;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -84,7 +90,6 @@ public class RawGNSSActivity extends AppCompatActivity implements LocationListen
         registerStatusListener();
 
         mLocationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
     }
 
     private void registerStatusListener() {
@@ -93,8 +98,60 @@ public class RawGNSSActivity extends AppCompatActivity implements LocationListen
             public void onSatelliteStatusChanged(GnssStatus status) {
                 super.onSatelliteStatusChanged(status);
                 textViewSatCount.setText(Integer.toString(status.getSatelliteCount()));
+
+                int nbSumSat = status.getSatelliteCount();
+                int nbAvailableSat = 0;
+                for (int i =0; i < nbSumSat; ++i) {
+
+                    if((status.getElevationDegrees(i) >= (ZENITH_ELEVATION - RANGE_ELEVATION)) &&
+                            (status.getElevationDegrees(i) <= (ZENITH_ELEVATION + RANGE_ELEVATION))) {
+                        StringBuilder builder = new StringBuilder();
+                        builder.append("\n" + "Satellite ID: " + status.getSvid(i) + "\n");
+                        builder.append("Type: " + getSatType(status.getConstellationType(i)) + "\n");
+                        builder.append("Azimuth: " + status.getAzimuthDegrees(i) + "°\n");
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            //builder.append("Carrier frequency: " + status.getCarrierFrequencyHz(i) + "Hz\n");
+                        }
+                        //builder.append("Cn0Db: " + status.getCn0DbHz(i) + "Hz\n");
+                        builder.append("Elevation: " + status.getElevationDegrees(i) + "°\n");
+                        Log.v(TAG, builder.toString());
+                        nbAvailableSat++;
+                    }
+                }
+                Log.v(TAG, "Number of satellites (in best range): " + nbAvailableSat + "\n");
             }
         };
+    }
+
+    private String getSatType(int constellationType) {
+        String typeSat;
+        switch (constellationType){
+            case GnssStatus.CONSTELLATION_GPS:
+                typeSat = "GPS";
+                break;
+            case GnssStatus.CONSTELLATION_SBAS:
+                typeSat = "SBAS";
+                break;
+            case GnssStatus.CONSTELLATION_GLONASS:
+                typeSat = "GLONASS";
+                break;
+            case GnssStatus.CONSTELLATION_QZSS:
+                typeSat = "QZSS";
+                break;
+            case GnssStatus.CONSTELLATION_BEIDOU:
+                typeSat = "BEIDOU";
+                break;
+            case GnssStatus.CONSTELLATION_GALILEO:
+                typeSat = "GALILEO";
+                break;
+            case GnssStatus.CONSTELLATION_UNKNOWN:
+                typeSat = "UKNOWN";
+                break;
+            default:
+                typeSat = "UKNOWN";
+                break;
+        }
+        return typeSat;
     }
 
     public void registerRawMeasurements() {
@@ -104,14 +161,15 @@ public class RawGNSSActivity extends AppCompatActivity implements LocationListen
         mRawMeasurementsListener = new GnssMeasurementsEvent.Callback() {
             @Override
             public void onGnssMeasurementsReceived(GnssMeasurementsEvent eventArgs) {
+                GnssClock clock = eventArgs.getClock();
+                GNSSTime = clock.getTimeNanos() - (clock.getFullBiasNanos() + clock.getBiasNanos());
                 for (GnssMeasurement m : eventArgs.getMeasurements()) {
-
-                    setConstellationType(m.getConstellationType());
+                    textViewConst.setText(getSatType(m.getConstellationType()));
                     textViewCarrierFreq.setText(Float.toString(m.getCarrierFrequencyHz()));
                     textViewAccumDeltaRange.setText(Double.toString(m.getAccumulatedDeltaRangeMeters()));
                     textViewAccumDeltaRangeUnc.setText(Double.toString(m.getPseudorangeRateUncertaintyMetersPerSecond()));
                     textViewTime.setText(new SimpleDateFormat("HH:mm:ss", Locale.ENGLISH).format(Calendar.getInstance().getTime()));
-
+                    createPseudoRange(m.getConstellationType(), clock, m.getTimeOffsetNanos(), m.getReceivedSvTimeNanos());
                 }
                 super.onGnssMeasurementsReceived(eventArgs);
 
@@ -128,28 +186,48 @@ public class RawGNSSActivity extends AppCompatActivity implements LocationListen
 
     }
 
+    private void createPseudoRange(int constellationType, GnssClock clock, double timeOffsetNanos, long receivedSvTimeNanos) {
+        long numberNanoSecondsWeek = 604800*(10^9); //within a week
+        long numberNanoSecondsDay = numberNanoSecondsWeek / 7;
+        long numberNanoSeconds100Milli = 10^8;
+        long weekNumberNanos = Math.floorDiv(-clock.getFullBiasNanos(), Double.doubleToLongBits(numberNanoSecondsWeek)) * numberNanoSecondsWeek;
+        long dayNumberNanos = Math.floorDiv(-clock.getFullBiasNanos(), Double.doubleToLongBits(numberNanoSecondsDay)) * numberNanoSecondsDay;
+        long milliSecondsNumberNanos = Math.floorDiv(-clock.getFullBiasNanos(), Double.doubleToLongBits(numberNanoSeconds100Milli)) * numberNanoSeconds100Milli;
+
+        double tRx_Gnss = clock.getTimeNanos() - (clock.getFullBiasNanos() + clock.getBiasNanos());
+        double tRx = -1;
+        double tTx;
+        double prMilliSeconds;
+        double pr;
+
+
+
+        switch (constellationType) {
+            case GnssStatus.CONSTELLATION_GPS:
+                tRx = tRx_Gnss % numberNanoSecondsWeek;
+                break;
+            case GnssStatus.CONSTELLATION_GLONASS:
+                tRx = (tRx_Gnss % numberNanoSecondsDay) + 1.08*(10^13) - clock.getLeapSecond() * (10^9);
+                break;
+        }
+        tTx = receivedSvTimeNanos + timeOffsetNanos;
+        if(tRx != -1){
+            prMilliSeconds = (tRx - tTx);
+            pr = prMilliSeconds * 299792458 * (10^-9);
+            //Log.v(TAG,"pseudorange : "+pr+" seconds");
+         }
+    }
+
     @Override
     protected void onStart() {
         super.onStart();
-        /*
-        final LocationRequest locationRequest = new LocationRequest();
-
-        locationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        locationRequest.setMaxWaitTime(500);
-        locationRequest.setInterval(1000);
-        locationRequest.setFastestInterval(100);*/
-
 
         MainActivity.checkLocationPermission(this);
-        /*mFusedLocationClient.requestLocationUpdates(
-                locationRequest,
-                locationCallback,
-                null);
-        */
+
         mLocationManager.registerGnssStatusCallback(mGnssStatusListener);
         mLocationManager.registerGnssMeasurementsCallback(mRawMeasurementsListener);
 
-        mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0, this);
+        mLocationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 5000, 0, this);
     }
 
     @Override
@@ -184,35 +262,6 @@ public class RawGNSSActivity extends AppCompatActivity implements LocationListen
                 break;
         }
         textViewTime.setText(new SimpleDateFormat("HH:mm:ss", Locale.ENGLISH).format(Calendar.getInstance().getTime()));
-    }
-
-    private void setConstellationType(int constellationType) {
-        switch (constellationType){
-            case GnssStatus.CONSTELLATION_GPS:
-                textViewConst.setText("GPS");
-                break;
-            case GnssStatus.CONSTELLATION_SBAS:
-                textViewConst.setText("SBAS");
-                break;
-            case GnssStatus.CONSTELLATION_GLONASS:
-                textViewConst.setText("GLONASS");
-                break;
-            case GnssStatus.CONSTELLATION_QZSS:
-                textViewConst.setText("QZSS");
-                break;
-            case GnssStatus.CONSTELLATION_BEIDOU:
-                textViewConst.setText("BEIDOU");
-                break;
-            case GnssStatus.CONSTELLATION_GALILEO:
-                textViewConst.setText("GALILEO");
-                break;
-            case GnssStatus.CONSTELLATION_UNKNOWN:
-                textViewConst.setText("UNKNOWN");
-                break;
-            default:
-                textViewConst.setText("UKNOWN");
-                break;
-        }
     }
 
     @Override
