@@ -14,8 +14,8 @@ import android.view.View;
 
 public class MainActivity extends AppCompatActivity {
 
-    public static final int PERMISSION_REQUEST_CODE = 698;
-    public static final int WRITE_REQUEST_CODE = 699;
+    public static final int PERMISSION_REQUEST_CODE = 980;
+    public static final boolean TEST_NTRIP = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,8 +30,12 @@ public class MainActivity extends AppCompatActivity {
     protected void onStart() {
         super.onStart();
         checkLocationPermission(this);
-        String [] persmissions = {Manifest.permission.WRITE_EXTERNAL_STORAGE};
-        requestPermissions(persmissions, WRITE_REQUEST_CODE);
+        String [] persmissions = {
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                Manifest.permission.INTERNET,
+                Manifest.permission.BLUETOOTH,
+                Manifest.permission.BLUETOOTH_ADMIN};
+        requestPermissions(persmissions, PERMISSION_REQUEST_CODE);
     }
 
     @Override
@@ -43,14 +47,6 @@ public class MainActivity extends AppCompatActivity {
                 }
                 else {
                     System.exit(0);
-                }
-            }
-            case WRITE_REQUEST_CODE: {
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-                }
-                else {
-
                 }
             }
         }
@@ -74,5 +70,15 @@ public class MainActivity extends AppCompatActivity {
     public void onClickRawGNSSLocation(View view) {
         Intent intent = new Intent(this, RawGNSSActivity.class);
         startActivity(intent);
+    }
+
+
+    public void onClickComputedGNSSLocation(View view) {
+        if (TEST_NTRIP) {
+            Intent intentServ = new Intent(this, NtripService.class);
+            Intent intentAct = new Intent(this, NtripActivity.class);
+            startService(intentServ);
+            startActivity(intentAct);
+        }
     }
 }
